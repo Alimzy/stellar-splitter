@@ -1,5 +1,8 @@
 # Stellar Splitter
 
+[![CI](https://github.com/Alimzy/stellar-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/Alimzy/stellar-splitter/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A pro-rata **payment splitter** for Soroban. One contract, one job: take a
 SEP-41 token, divide it between up to 10 recipients by share (basis points),
 and let each recipient pull exactly what they are owed.
