@@ -1,0 +1,10 @@
+# cargo-deny policy. Advisories are covered by the separate `cargo audit` job.
+[sources]
+unknown-registry = "deny"
+unknown-git      = "deny"
+allow-registry   = ["https://github.com/rust-lang/crates.io-index"]
+allow-git        = []
+
+[bans]
+multiple-versions = "warn"
+wildcards         = "deny"

@@ -1,0 +1,6 @@
+/target
+artifacts/
+.env
+*.secret
+.DS_Store
+crates/*/test_snapshots/

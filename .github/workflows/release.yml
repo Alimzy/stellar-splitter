@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+env:
+  STELLAR_CLI_VERSION: "28.0.0"
+
+jobs:
+  release:
+    name: Build and publish WASM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - name: Install stellar-cli (pinned prebuilt binary)
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl --proto '=https' --tlsv1.2 -sSfL \
+            "https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/stellar-cli-${STELLAR_CLI_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: cargo test --workspace --all-targets --locked
+      - run: stellar contract build --locked --profile release
+      - name: Write checksums
+        run: |
+          cd target/wasm32v1-none/release
+          sha256sum *.wasm > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            target/wasm32v1-none/release/*.wasm
+            target/wasm32v1-none/release/SHA256SUMS.txt

@@ -1,0 +1,19 @@
+[package]
+name         = "stellar-splitter"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+repository.workspace   = true
+description  = "Pro-rata SEP-41 payment splitter contract for Soroban (pull-based claims)"
+
+[lib]
+crate-type = ["cdylib"]
+doctest    = false
+
+[dependencies]
+soroban-sdk.workspace = true
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+proptest    = "1"

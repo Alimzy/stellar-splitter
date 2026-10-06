@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = ["crates/splitter"]
+
+[workspace.package]
+version      = "0.1.0"
+edition      = "2021"
+rust-version = "1.84"
+license      = "MIT"
+repository   = "https://github.com/Alimzy/stellar-splitter"
+
+[workspace.dependencies]
+soroban-sdk = "=28.0.0"
+
+[profile.release]
+opt-level        = "z"
+lto              = true
+codegen-units    = 1
+panic            = "abort"
+strip            = "symbols"
+overflow-checks  = true
+debug            = 0
+debug-assertions = false
+
+[profile.release-with-logs]
+inherits         = "release"
+debug-assertions = true
