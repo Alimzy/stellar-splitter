@@ -206,6 +206,10 @@ impl Splitter {
         split.total_deposited = new_total;
         save_split(&env, split_id, &split);
 
+        env.storage()
+            .instance()
+            .extend_ttl(BUMP_THRESHOLD, BUMP_AMOUNT);
+
         events::Deposited {
             split_id,
             from,
@@ -240,6 +244,10 @@ impl Splitter {
             .persistent()
             .extend_ttl(&key, BUMP_THRESHOLD, BUMP_AMOUNT);
         bump_split(&env, split_id);
+
+        env.storage()
+            .instance()
+            .extend_ttl(BUMP_THRESHOLD, BUMP_AMOUNT);
 
         events::Claimed {
             split_id,

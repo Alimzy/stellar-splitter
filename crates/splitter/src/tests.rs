@@ -1,5 +1,6 @@
 use super::*;
-use soroban_sdk::testutils::Address as _;
+use soroban_sdk::testutils::storage::Instance as _;
+use soroban_sdk::testutils::{Address as _, Ledger as _};
 use soroban_sdk::token::{Client as TokenClient, StellarAssetClient};
 use soroban_sdk::{Env, Vec};
 
@@ -62,6 +63,69 @@ fn create_split_stores_record_and_assigns_ids() {
     assert_eq!(s.total_deposited, 0);
     assert_eq!(s.recipients.len(), 2);
     assert_eq!(s.creator, creator);
+}
+
+#[test]
+fn deposit_refreshes_instance_ttl() {
+    let fx = Fx::new();
+    let admin = fx.addr();
+    let recipient = fx.addr();
+    let client = fx.client();
+
+    fx.mint(&admin, 1_000);
+
+    let split_id = client.create_split(&admin, &fx.token, &fx.recipients(&[(&recipient, 10_000)]));
+
+    let initial_ttl = fx
+        .env
+        .as_contract(&fx.contract, || fx.env.storage().instance().get_ttl());
+    assert_eq!(initial_ttl, BUMP_AMOUNT);
+
+    fx.env
+        .ledger()
+        .set_sequence_number(BUMP_AMOUNT - BUMP_THRESHOLD + 1);
+
+    let ttl_before_refresh = fx
+        .env
+        .as_contract(&fx.contract, || fx.env.storage().instance().get_ttl());
+    assert!(ttl_before_refresh < BUMP_THRESHOLD);
+
+    client.deposit(&split_id, &admin, &100);
+
+    let refreshed_ttl = fx
+        .env
+        .as_contract(&fx.contract, || fx.env.storage().instance().get_ttl());
+    assert_eq!(refreshed_ttl, BUMP_AMOUNT);
+}
+
+#[test]
+fn claim_refreshes_instance_ttl() {
+    let fx = Fx::new();
+    let admin = fx.addr();
+    let recipient = fx.addr();
+    let client = fx.client();
+
+    fx.mint(&admin, 1_000);
+
+    let split_id = client.create_split(&admin, &fx.token, &fx.recipients(&[(&recipient, 10_000)]));
+
+    client.deposit(&split_id, &admin, &100);
+
+    fx.env
+        .ledger()
+        .set_sequence_number(BUMP_AMOUNT - BUMP_THRESHOLD + 1);
+
+    let ttl_before_refresh = fx
+        .env
+        .as_contract(&fx.contract, || fx.env.storage().instance().get_ttl());
+    assert!(ttl_before_refresh < BUMP_THRESHOLD);
+
+    client.claim(&split_id, &recipient);
+
+    let refreshed_ttl = fx
+        .env
+        .as_contract(&fx.contract, || fx.env.storage().instance().get_ttl());
+    assert_eq!(refreshed_ttl, BUMP_AMOUNT);
 }
 
 #[test]
